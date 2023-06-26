@@ -6,6 +6,7 @@ import path from "path";
 import {calculateHash} from "./hash/calcHash.js";
 import {createFile} from "./basic/create.js";
 import {removeFile} from "./basic/delete.js";
+import {osInfo} from "./basic/os.js";
 
 process.chdir(os.homedir());
 process.stdin.setEncoding('utf8');
@@ -60,18 +61,28 @@ function remove(inputPath) {
     try {
         removeFile(targetDir).then((data) => {
             console.log(data)}).catch(() => {
-            console.log('\x1b[31m%s\x1b[0m', 'remove unsuccessful. Check your file path')})
+            console.log('\x1b[31m%s\x1b[0m', 'remove failure. Check your file path')})
     } catch (err) {
         console.error(`Error during removing: ${err}`);
     }
 }
 
+async function osInfoHandler(flag) {
+    flag = flag.trim();
+    try {
+        await osInfo(flag).then((data) => {
+            console.log(data)}).catch(() => {
+            console.log('\x1b[31m%s\x1b[0m', 'info output failure. Check parameter')})
+    } catch (err) {
+        console.error(`Error during info print: ${err}`);
+    }
+}
+
 async function create(fileName) {
     try {
-        // await createFile(fileName);
         await createFile(fileName).then((data) => {
             console.log(data)}).catch(() => {
-            console.log('\x1b[31m%s\x1b[0m', 'create file unsuccessful. Check your file path')})
+            console.log('\x1b[31m%s\x1b[0m', 'create file failure. Check your file path')})
     } catch (err) {
         console.error(`Error during creating: ${err}`);
     }
@@ -85,6 +96,7 @@ process.stdin.on('data', (input) => {
     else if (input.includes('hash ')) {hash(input.substring(5))}
     else if (input.includes('add ')) {create(input.substring(4))}
     else if (input.includes('rm ')) {remove(input.substring(3))}
+    else if (input.includes('os --')) {osInfoHandler(input.substring(5))}
     else console.log('\x1b[31m%s\x1b[0m', 'Invalid input')
 });
 
