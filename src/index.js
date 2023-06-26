@@ -5,6 +5,7 @@ import os from "os";
 import path from "path";
 import {calculateHash} from "./hash/calcHash.js";
 import {createFile} from "./basic/create.js";
+import {removeFile} from "./basic/delete.js";
 
 process.chdir(os.homedir());
 process.stdin.setEncoding('utf8');
@@ -44,7 +45,6 @@ function cd(inputPath) {
 function hash(inputPath) {
     const targetFolder = inputPath.trim();
     const targetDir = path.resolve(targetFolder);
-    console.log(targetDir)
         try {
             calculateHash(targetDir).then((data) => {
                 console.log(data)}).catch(() => {
@@ -52,6 +52,18 @@ function hash(inputPath) {
         } catch (err) {
             console.error(`Error during hashing: ${err}`);
         }
+}
+
+function remove(inputPath) {
+    const targetFolder = inputPath.trim();
+    const targetDir = path.resolve(targetFolder);
+    try {
+        removeFile(targetDir).then((data) => {
+            console.log(data)}).catch(() => {
+            console.log('\x1b[31m%s\x1b[0m', 'remove unsuccessful. Check your file path')})
+    } catch (err) {
+        console.error(`Error during removing: ${err}`);
+    }
 }
 
 async function create(fileName) {
@@ -72,6 +84,7 @@ process.stdin.on('data', (input) => {
     else if (input.includes('cd ')) {cd(input.substring(3))}
     else if (input.includes('hash ')) {hash(input.substring(5))}
     else if (input.includes('add ')) {create(input.substring(4))}
+    else if (input.includes('rm ')) {remove(input.substring(3))}
     else console.log('\x1b[31m%s\x1b[0m', 'Invalid input')
 });
 
