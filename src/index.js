@@ -3,6 +3,7 @@ import {getVarFromArgs} from "./helpers/getUsernameFromArgs.js";
 import {list} from "./helpers/list.js"
 import os from "os";
 import path from "path";
+import {calculateHash} from "./hash/calcHash.js";
 
 process.chdir(os.homedir());
 process.stdin.setEncoding('utf8');
@@ -27,7 +28,7 @@ function moveUp() {
 function cd(inputPath) {
     const targetFolder = inputPath.trim();
     const targetDir = path.resolve(process.cwd(), targetFolder);
-    if (os.homedir().toString().length > targetDir.length) {console.info('You can\'t go upper than root directory'); return;}
+    if (os.homedir().toString().length > targetDir.length) {console.log('\x1b[31m%s\x1b[0m', 'You can\'t go upper than root directory'); return;}
     if (targetFolder === '..') moveUp();
     else
     try {
@@ -37,16 +38,31 @@ function cd(inputPath) {
     }
 }
 
+function hash(inputPath) {
+    console.log(inputPath)
+    const targetFolder = inputPath.trim();
+    const targetDir = path.resolve(targetFolder);
+    console.log(targetDir)
+        try {
+            calculateHash(targetDir).then((data) => {
+                console.log(data)}).catch(() => {
+                console.log('\x1b[31m%s\x1b[0m', 'Unsuccessful. Check your file path')})
+        } catch (err) {
+            console.error(`Error during hashing: ${err}`);
+        }
+}
+
 process.stdin.on('data', (input) => {
     if (input.includes('.exit')) process.emit('SIGINT')
-    if (input.includes('up')) moveUp();
-    if (input.includes('ls')) list();
-    if (input.includes('cd ')) {cd(input.substring(3))}
-        else console.log('Invalid input')
+    else if (input.includes('up')) moveUp();
+    else if (input.includes('ls')) list();
+    else if (input.includes('cd ')) {cd(input.substring(3))}
+    else if (input.includes('hash ')) {hash(input.substring(5))}
+    else console.log('\x1b[31m%s\x1b[0m', 'Invalid input')
 });
 
 process.on('SIGINT', onExit);
 
 process.stdin.on('data', () => {
-    console.log('You are currently in ' + process.cwd())
+    console.log('\x1b[32m%s\x1b[0m', 'You are currently in ' + process.cwd())
 });
